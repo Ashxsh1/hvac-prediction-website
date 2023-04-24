@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>HVAC Predictor</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.17/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-200">
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-semibold mb-4">HVAC Predictor</h1>
+    <form id="inputForm" class="bg-white rounded-lg shadow-lg px-8 py-6">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="mb-4">
+          <label class="block font-semibold mb-2">T_Return</label>
+          <input id="tReturnInput" type="number" step="0.01" class="border-gray-300 border w-full px-3 py-2" required>
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-2">SP_Return</label>
+          <input id="spReturnInput" type="number" step="0.01" class="border-gray-300 border w-full px-3 py-2" required>
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-2">T_Saturation</label>
+          <input id="tSaturationInput" type="number" step="0.01" class="border-gray-300 border w-full px-3 py-2" required>
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-2">T_Outdoor</label>
+          <input id="tOutdoorInput" type="number" step="0.01" class="border-gray-300 border w-full px-3 py-2" required>
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-2">RH_Supply</label>
+          <input id="rhSupplyInput" type="number" step="0.01" class="border-gray-300 border w-full px-3 py-2" required>
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-2">RH_Return</label>
+          <input id="rhReturnInput" type="number" step="0.01" class="border-gray-300 border w-full px-3 py-2" required>
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-2">RH_Outdoor</label>
+          <input id="rhOutdoorInput" type="number" step="0.01" class="border-gray-300 border w-full px-3 py-2" required>
+        </div>
+        <div class="mb-4">
+          <label class="block font-semibold mb-2">Power</label>
+          <input id="powerInput" type="number" step="0.01" class="border-gray-300 border w-full px-3 py-2" required>
+        </div>
+      </div>
+      <button type="submit"
+        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg mt-4">Predict</button>
+    </form>
+    <div id="outputDiv" class="mt-8"></div>
+  </div>
+
+  <script>
+    document.getElementById('inputForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      // input
+      const tReturn = parseFloat(document.getElementById('tReturnInput').value);
+      const spReturn = parseFloat(document.getElementById('spReturnInput').value);
+      const tSaturation = parseFloat(document.getElementById('tSaturationInput').value);
+      const tOutdoor = parseFloat(document.getElementById('tOutdoorInput').value);
+      const rhSupply = parseFloat(document.getElementById('rhSupplyInput').value);
+      const rhReturn = parseFloat(document.getElementById('rhReturnInput').value);
+      const rhOutdoor = parseFloat(document.getElementById('rhOutdoorInput').value);
+      const power = parseFloat(document.getElementById('powerInput').value);
+
+      //calculations
+      const tSupply = 3.77 + 0.21*tReturn + 0.0*spReturn + 0.78*tSaturation + 0.04*tOutdoor + -0.06*rhSupply + 0.02*rhReturn + -0.01*rhOutdoor + 0.26*power;
+      const tExhaust = tSaturation + ((tSupply - tSaturation) * (rhReturn / 100));
+      const sensibleCoolingLoad = 1.08 * (tSupply - tOutdoor) * 4.18 * power;
+      const latentCoolingLoad = 0.68 * (tExhaust - tOutdoor) * 2.25 * power;
+      const totalCoolingLoad = sensibleCoolingLoad + latentCoolingLoad;
+
+      //output
+      const outputDiv = document.getElementById('outputDiv');
+      outputDiv.innerHTML = `
+        <h2 class="text-xl font-semibold mb-2">Results:</h2>
+        <p><strong>T_Return:</strong> ${tReturn} &#8451;</p>
+        <p><strong>SP_Return:</strong> ${spReturn} &#8451;</p>
+        <p><strong>T_Saturation:</strong> ${tSaturation} &#8451;</p>
+        <p><strong>T_Outdoor:</strong> ${tOutdoor} &#8451;</p>
+        <p><strong>RH_Supply:</strong> ${rhSupply} %</p>
+        <p><strong>RH_Return:</strong> ${rhReturn} %</p>
+        <p><strong>RH_Outdoor:</strong> ${rhOutdoor} %</p>
+        <p><strong>Power:</strong> ${power} kW</p>
+        <p><strong>T_Supply:</strong> ${tSupply} &#8451;</p>
+        <p><strong>T_Exhaust:</strong> ${tExhaust} &#8451;</p>
+        <p><strong>Sensible Cooling Load:</strong> ${sensibleCoolingLoad} kWh</p>
+        <p><strong>Latent Cooling Load:</strong> ${latentCoolingLoad} kWh</p>
+        <p><strong>Total Cooling Load:</strong> ${totalCoolingLoad} kWh</p>
+      `;
+    });
+  </script>
+</body>
+
+</html>
